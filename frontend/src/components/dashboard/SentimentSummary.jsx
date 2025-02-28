@@ -22,7 +22,7 @@ function SentimentSummary() {
         const response = await fetch('http://127.0.0.1:5000/api/getsenti_score', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ brand_name: "boAt", platform })
+          body: JSON.stringify({ brand_name: "boAt", platform }),
         })
         const data = await response.json()
         console.log(data)
