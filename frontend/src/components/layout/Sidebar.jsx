@@ -5,7 +5,7 @@ function Sidebar({ isOpen, toggleSidebar }) {
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: FiHome },
     { name: 'Mentions & Comments', path: '/mentions', icon: FiMessageSquare },
-    { name: 'Sentiment Trends', path: '/sentiment-trends', icon: FiTrendingUp },
+    { name: 'Sentiment Trends', path: '/sentiment', icon: FiTrendingUp },
     { name: 'Alerts', path: '/alerts', icon: FiBell },
     { name: 'Settings', path: '/settings', icon: FiSettings },
   ]
