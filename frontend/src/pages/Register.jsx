@@ -31,9 +31,9 @@ function Register() {
     };
 
     return (
-        <div className="md:flex justify-center items-center h-full w-full">
-            <img src="./image.png" className="absolute w-full" />
-            <div className="h-full w-full md:w-2/5 bg-white shadow-lg rounded-lg p-20 z-10">
+        <div className="md:flex justify-center items-center h-full w-full py-4">
+            <img src="./bg.png" className="absolute w-full" />
+            <div className="h-full w-full md:w-2/5 bg-white shadow-lg rounded-lg p-6 z-10 ">
                 <div className="flex justify-center">
                     <h1 className="text-4xl font-bold">Create Account</h1>
                 </div>
@@ -79,6 +79,20 @@ function Register() {
                             type="email"
                             placeholder="Enter your email"
                             value={formData.email}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+                    <div className="mb-6">
+                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="hashtag">
+                            Hashtags
+                        </label>
+                        <input
+                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            id="hashtags"
+                            type="text"
+                            placeholder="Enter brand target hashtags"
+                            value={formData.hashtags}
                             onChange={handleChange}
                             required
                         />
