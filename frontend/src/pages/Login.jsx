@@ -16,19 +16,27 @@ function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        try {
+            const response = await fetch("http://127.0.0.1:5000/api/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData)
+            });
 
-        const response = await fetch("http://localhost:5000/api/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(formData)
-        });
+            const data = await response.json();
 
-        const data = await response.json();
-
-        if (data.status === "sucess") {
-            navigate("/dashboard");
+            if (response.status === 200) {
+                alert(data.message)
+                navigate("/dashboard");
+            }
+            else {
+                alert(data.error)
+            }
+        }
+        catch {
+            alert("An error was caused", response.error)
         }
         console.log("Response:", data);
     };
