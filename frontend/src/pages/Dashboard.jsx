@@ -1,8 +1,6 @@
 
 import React, { useState } from "react"
 // import PieChartdiv from "../components/dashboard/PieChartData"  
-import Positivesentiments from "@/components/dashboard/Positivesentiments"
-import Realtime from "@/components/dashboard/Realtime"
 import Header from "@/components/layout/Header"
 import Sidebar from "@/components/layout/Sidebar"
 import { useTheme } from "@/context/ThemeContext"
@@ -10,6 +8,7 @@ import SentimentSummary from "@/components/dashboard/SentimentSummary"
 import TrendingAnalysis from "@/components/dashboard/TrendingAnalysis"
 import PlatformBreakdown from "@/components/dashboard/PlatformBreakdown"
 import NegativeSentimentAlerts from "@/components/dashboard/NegativeSentimentAlerts"
+import EngagementMonitoring from "@/components/dashboard/EngagementMonitoring"
 const chartData = [
     { browser: "chrome", visitors: 275, fill: "#4285F4" },
     { browser: "safari", visitors: 200, fill: "#FF9500" },
@@ -61,7 +60,7 @@ function Dashboard() {
                     <div className="flex justify-between items-center">
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Sentiment Analysis Dashboard</h1>
                         <div className="flex space-x-2">
-                            <button className=" border-2 font-medium border-gray-200 p-2 bg-gray-200 text-center rounded-sm ">Export Data</button>
+                            <button className=" border-2 font-medium border-gray-200 p-2 bg-gray-200 text-center rounded-sm dark:bg-gray-700 dark:text-white">Export Data</button>
                             <button className=" border-2 border-gray-200 px-2 py-1 rounded-sm bg-blue-700 text-white">Generate Report</button>
                         </div>
                     </div>
@@ -70,7 +69,7 @@ function Dashboard() {
                     <TrendingAnalysis />
                     <PlatformBreakdown />
                     <NegativeSentimentAlerts />
-                    {/* <EngagementMonitoring /> */}
+                    <EngagementMonitoring />
                 </div>
             </div>
         </div>
