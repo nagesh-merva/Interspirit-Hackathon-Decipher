@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Doughnut } from 'react-chartjs-2'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import { FiTwitter, FiInstagram } from 'react-icons/fi'
@@ -8,6 +8,32 @@ ChartJS.register(ArcElement, Tooltip, Legend)
 function SentimentSummary() {
   const [timeframe, setTimeframe] = useState('daily')
   const [platform, setPlatform] = useState('all')
+  const [sentimentData, setSentimentData] = useState({
+    positive_score: 0,
+    negative_score: 0,
+    neutral_score: 0,
+    ovr_score: 0,
+    recent_mentions: []
+  })
+
+  useEffect(() => {
+    async function fetchSentimentData() {
+      try {
+        const response = await fetch('http://127.0.0.1:5000/api/getsenti_score', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ brand_name: "boAt", platform })
+        })
+        const data = await response.json()
+        console.log(data)
+        setSentimentData(data)
+      } catch (error) {
+        console.error('Error fetching sentiment data:', error)
+      }
+    }
+
+    fetchSentimentData()
+  }, [platform])
 
   const sentimentScore = 78 // Example score out of 100
 
@@ -15,8 +41,8 @@ function SentimentSummary() {
     labels: ['Positive', 'Neutral', 'Negative'],
     datasets: [
       {
-        data: platform === 'twitter' ? [65, 20, 15] :
-          platform === 'instagram' ? [70, 25, 5] :
+        data: platform === 'twitter' ? [sentimentData.positive_score, sentimentData.negative_score, sentimentData.neutral_score] :
+          platform === 'instagram' ? [sentimentData.positive_score, sentimentData.negative_score, sentimentData.neutral_score] :
             [68, 22, 10],
         backgroundColor: [
           '#10B981', // positive
@@ -77,7 +103,7 @@ function SentimentSummary() {
           <div className="relative w-40 h-40">
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center">
-                <div className="text-3xl font-bold text-gray-900 dark:text-white">{sentimentScore}</div>
+                <div className="text-3xl font-bold text-gray-900 dark:text-white">{sentimentData.ovr_score}</div>
                 <div className="text-sm text-gray-500 dark:text-gray-400">out of 100</div>
               </div>
             </div>

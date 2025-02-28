@@ -116,7 +116,7 @@ def get_senti_score():
     overall_score = sentiment_data.get("overall_score", 0)
     
     # Get recent tweets and comments (last 1 hour)
-    one_hour_ago = datetime.utcnow() - timedelta(hours=1)
+    one_hour_ago = datetime.utcnow() - datetime.timedelta(hours=1)
     
     recent_mentions = []
     if platform in ["twitter", "all"]:
