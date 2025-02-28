@@ -60,7 +60,7 @@ function Dashboard() {
                     <div className="flex justify-between items-center">
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Sentiment Analysis Dashboard</h1>
                         <div className="flex space-x-2">
-                            <button className=" border-2 font-medium border-gray-200 p-2 bg-gray-200 text-center rounded-sm dark:bg-gray-700 dark:text-white">Export Data</button>
+
                             <button className=" border-2 border-gray-200 px-2 py-1 rounded-sm bg-blue-700 text-white">Generate Report</button>
                         </div>
                     </div>

@@ -5,6 +5,7 @@ import Login from "./pages/login"
 import Dashboard from "./pages/Dashboard"
 import SentimentTrends from "./pages/SentimentTrends"
 import LandingPage from "./pages/Home"
+import Alerts from "./pages/Alerts"
 function App() {
 
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/sentiment" element={<SentimentTrends />} />
+        <Route path="/alerts" element={<Alerts />} />
 
       </Routes>
     </div>
