@@ -61,7 +61,7 @@ function SentimentSummary() {
               key={option}
               onClick={() => setTimeframe(option)}
               className={`px-3 py-1 text-xs rounded-full ${timeframe === option
-                ? 'bg-primary-light text-white'
+                ? 'bg-primary-light text-white bg-blue-400'
                 : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
                 }`}
             >
@@ -118,7 +118,7 @@ function SentimentSummary() {
               <button
                 onClick={() => setPlatform('all')}
                 className={`flex items-center px-2 py-1 text-xs rounded-full ${platform === 'all'
-                  ? 'bg-primary-light text-white'
+                  ? 'bg-primary-light text-white  bg-red-300'
                   : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
                   }`}
               >
@@ -127,7 +127,7 @@ function SentimentSummary() {
               <button
                 onClick={() => setPlatform('twitter')}
                 className={`flex items-center px-2 py-1 text-xs rounded-full ${platform === 'twitter'
-                  ? 'bg-primary-light text-white'
+                  ? 'bg-primary-light text-white bg-blue-400'
                   : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
                   }`}
               >
@@ -136,7 +136,7 @@ function SentimentSummary() {
               <button
                 onClick={() => setPlatform('instagram')}
                 className={`flex items-center px-2 py-1 text-xs rounded-full ${platform === 'instagram'
-                  ? 'bg-primary-light text-white'
+                  ? 'bg-primary-light text-white bg-pink-600'
                   : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
                   }`}
               >

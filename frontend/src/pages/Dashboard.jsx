@@ -59,8 +59,8 @@ function Dashboard() {
                     <div className="flex justify-between items-center">
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Sentiment Analysis Dashboard</h1>
                         <div className="flex space-x-2">
-                            <button className="btn btn-secondary">Export Data</button>
-                            <button className="btn btn-primary">Generate Report</button>
+                            <button className=" border-2 font-medium border-gray-200 p-2 bg-gray-200 text-center rounded-sm ">Export Data</button>
+                            <button className=" border-2 border-gray-200 px-2 py-1 rounded-sm bg-blue-700 text-white">Generate Report</button>
                         </div>
                     </div>
 
