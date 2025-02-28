@@ -33,7 +33,7 @@ function Sidebar({ isOpen, toggleSidebar }) {
             to={item.path}
             className={({ isActive }) =>
               `flex items-center px-4 py-3 rounded-md transition-colors ${isActive
-                ? 'bg-primary-light text-blue-500'
+                ? 'bg-blue-700 text-blue-200'
                 : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`
             }

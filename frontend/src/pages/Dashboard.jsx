@@ -50,7 +50,7 @@ function Dashboard() {
     const { darkMode } = useTheme()
 
     return (
-        <div className={`flex h-screen w-full ${darkMode ? 'dark' : ''}`}>
+        <div className={`flex h-screen w-full ${darkMode ? 'dark bg-slate-900' : ''}`}>
             <Sidebar isOpen={sidebarOpen} toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
             <div className="flex-1 flex flex-col space-y-6 overflow-hidden bg-background-light dark:bg-background-dark">
