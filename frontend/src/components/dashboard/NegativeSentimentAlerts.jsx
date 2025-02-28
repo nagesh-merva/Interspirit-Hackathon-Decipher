@@ -1,10 +1,12 @@
 import { useTheme } from '@/context/ThemeContext'
 import { useState, useEffect } from 'react'
 import { FiTwitter, FiInstagram, FiAlertTriangle } from 'react-icons/fi'
+import { useNavigate } from 'react-router-dom'
 
 function NegativeSentimentAlerts() {
   const [selectedTab, setSelectedTab] = useState('negative')
   const { negativeTweets, setNegativeTweets } = useTheme()
+  const navigate = useNavigate()
 
   const suggestedResponses = {
     1: 'We\'re sorry to hear about your experience. Our team is looking into this and will reach out to you directly to resolve this issue as quickly as possible.',
@@ -14,17 +16,12 @@ function NegativeSentimentAlerts() {
     5: 'We appreciate your perspective. Innovation is at the core of our roadmap, and we\'re excited to share our upcoming developments soon.',
   }
 
-
-
-  // Map the fetched tweets to the required structure if necessary.
-  // Here we assume the backend returns tweets with keys like:
-  // _id, tweet, username, likes, retweets, sentiment, severity, etc.
   const mappedTweets = negativeTweets.map(tweet => ({
     id: tweet._id,
-    // If the backend doesn't include a platform, default to 'twitter'
+
     platform: tweet.platform || "twitter",
     username: tweet.username,
-    content: tweet.tweet, // map tweet text to content
+    content: tweet.tweet,
     engagement: {
       likes: tweet.likes,
       retweets: tweet.retweets,
@@ -35,7 +32,7 @@ function NegativeSentimentAlerts() {
   }))
 
   return (
-    <div className="card mt-6 dark:bg-gray-800 p-4 mb-2 rounded-3xl shadow-sm">
+    <div className="card mt-6 dark:bg-gray-800 p-4 mb-2 rounded-3xl shadow-sm max-h-[540px] overflow-y-scroll">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Negative Sentiment & Crisis Alerts</h2>
         <div className="flex space-x-2">
@@ -122,13 +119,15 @@ function NegativeSentimentAlerts() {
                         {tweet.severity === 'high' ? (
                           <FiAlertTriangle className="h-3 w-3 mr-1" />
                         ) : null}
-                        {tweet.severity.charAt(0).toUpperCase() + tweet.severity.slice(1)}
+                        {tweet.severity
+                          ? tweet.severity.charAt(0).toUpperCase() + tweet.severity.slice(1)
+                          : 'Unknown'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button className="text-blue-700 hover:text-red-200 dark:text-blue-700 dark:hover:text-red-400 bg-amber-200 px-2 py-1 rounded-4xl">
+                      <a href="https://x.com/home" target="_blank" className="text-blue-700 hover:text-red-200 dark:text-blue-700 dark:hover:text-red-400 bg-amber-200 px-2 py-1 rounded-4xl">
                         Respond
-                      </button>
+                      </a>
                     </td>
                   </tr>
                 ))}

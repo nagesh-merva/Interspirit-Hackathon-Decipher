@@ -10,6 +10,11 @@ function SentimentSummary() {
   const [timeframe, setTimeframe] = useState('daily')
   const [platform, setPlatform] = useState('all')
   const { sentimentData, setSentimentData, negativeTweets, setNegativeTweets } = useTheme()
+  const [percentages, setPercentages] = useState({
+    pos: 0,
+    neu: 0,
+    neg: 0
+  });
 
   useEffect(() => {
     async function fetchNegativeTweets() {
@@ -50,10 +55,22 @@ function SentimentSummary() {
         const data = await response.json()
         console.log(data)
         setSentimentData(data)
+        // Calculate percentages from the fetched data, not from the state
+        const total = data.positive_score + data.neutral_score + data.negative_score;
+        if (total > 0) {
+          const newPercentages = {
+            pos: (data.positive_score / total * 100),
+            neu: (data.neutral_score / total * 100),
+            neg: (data.negative_score / total * 100)
+          };
+          console.log('Calculated percentages:', newPercentages);
+          setPercentages(newPercentages);
+        }
       } catch (error) {
         console.error('Error fetching sentiment data:', error)
       }
     }
+    console.log(percentages)
 
     fetchSentimentData()
   }, [platform])
@@ -64,8 +81,8 @@ function SentimentSummary() {
     labels: ['Positive', 'Neutral', 'Negative'],
     datasets: [
       {
-        data: platform === 'twitter' ? [sentimentData.positive_score, sentimentData.neutral_score, sentimentData.negative_score] :
-          platform === 'instagram' ? [sentimentData.positive_score, sentimentData.neutral_score, sentimentData.negative_score] :
+        data: platform === 'twitter' ? [percentages.pos, percentages.neu, percentages.neg] :
+          platform === 'instagram' ? [percentages.pos, percentages.neu, percentages.neg] :
             [68, 22, 10],
         backgroundColor: [
           '#10B981', // positive

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Line } from 'react-chartjs-2'
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'
 import { useTheme } from '@/context/ThemeContext'
@@ -9,6 +9,7 @@ function TrendingAnalysis() {
   const [timeframe, setTimeframe] = useState('7days')
   const [sentimentFilter, setSentimentFilter] = useState('all')
   const { sentimentData } = useTheme()
+  const [trendingHashtags, setTrendingHashtags] = useState([])
 
   const timeframeOptions = [
     { value: '24hours', label: 'Last 24 Hours' },
@@ -23,19 +24,29 @@ function TrendingAnalysis() {
     { value: 'negative', label: 'Negative' },
   ]
 
-  // Sample data for the trending hashtags
-  const trendingHashtags = [
-    { text: 'ProductLaunch', value: 25, sentiment: 'positive' },
-    { text: 'CustomerService', value: 18, sentiment: 'neutral' },
-    { text: 'Innovation', value: 15, sentiment: 'positive' },
-    { text: 'TechIssue', value: 12, sentiment: 'negative' },
-    { text: 'Feedback', value: 10, sentiment: 'neutral' },
-    { text: 'NewFeature', value: 8, sentiment: 'positive' },
-    { text: 'BugFix', value: 7, sentiment: 'positive' },
-    { text: 'Outage', value: 6, sentiment: 'negative' },
-    { text: 'Update', value: 5, sentiment: 'neutral' },
-    { text: 'Review', value: 4, sentiment: 'positive' },
-  ].filter(tag => sentimentFilter === 'all' || tag.sentiment === sentimentFilter)
+  // Fetch trending hashtags from backend
+  useEffect(() => {
+    async function fetchTrendingHashtags() {
+      try {
+        const response = await fetch('http://127.0.0.1:5000/api/get_hashtag_sentiments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ brand_name: "boAt" })
+        })
+        const data = await response.json()
+        console.log('Fetched trending hashtags:', data)
+        setTrendingHashtags(data)
+      } catch (error) {
+        console.error('Error fetching trending hashtags:', error)
+      }
+    }
+    fetchTrendingHashtags()
+  }, [])
+
+  // Filter the hashtags based on the sentiment filter.
+  const filteredHashtags = trendingHashtags.filter(
+    tag => sentimentFilter === 'all' || String(tag.sentiment).toLowerCase() === sentimentFilter
+  )
 
   // Sample data for the trend graph
   const trendData = {
@@ -161,18 +172,21 @@ function TrendingAnalysis() {
               ))}
             </div>
           </div>
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-md p-4 h-64 flex flex-wrap items-center justify-center overflow-y-scroll">
-            {trendingHashtags.map((tag, index) => (
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-md p-4 h-64 flex flex-wrap items-center justify-center overflow-y-scroll overflow-x-visible">
+            {filteredHashtags.map((tag, index) => (
               <div
                 key={index}
-                className={`m-1 px-3 py-1 rounded-full text-white  ${tag.sentiment === 'positive' ? 'bg-green-400' :
-                  tag.sentiment === 'neutral' ? 'bg-orange-400' : 'bg-red-500'
+                className={`m-1 px-3 py-1 rounded-full text-white ${String(tag.sentiment).toLowerCase() === 'positive' ? 'bg-green-400' :
+                  String(tag.sentiment).toLowerCase() === 'neutral' ? 'bg-orange-400' : 'bg-red-500'
                   }`}
-                style={{ fontSize: `${Math.max(0.7, tag.value / 10)}rem` }}
+                style={{ fontSize: `${Math.max(0.7, (tag.value || 10) / 10)}rem` }}
               >
-                #{tag.text}
+                #{tag.hashtag}
               </div>
             ))}
+            {filteredHashtags.length === 0 && (
+              <div className="text-sm text-gray-500 dark:text-gray-400">No trending hashtags available.</div>
+            )}
           </div>
         </div>
       </div>
