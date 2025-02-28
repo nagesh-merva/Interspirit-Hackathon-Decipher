@@ -175,35 +175,26 @@ function SentimentSummary() {
           </div>
         </div>
 
-        <div>
+        <div className="card dark:bg-gray-800 rounded-3xl shadow-lg p-5">
           <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Real-Time Mentions</h3>
           <div className="bg-gray-50 dark:bg-gray-700 rounded-md p-3 h-48 overflow-y-auto scrollbar-hide">
-            {[1, 2, 3, 4, 5].map((item) => (
-              <div key={item} className="mb-3 p-2 bg-white dark:bg-gray-800 rounded shadow-sm">
+            {sentimentData.recent_mentions.map((mention, index) => (
+              <div key={index} className="mb-3 p-2 bg-white dark:bg-gray-800 rounded shadow-sm">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    {item % 2 === 0 ? (
+                    {mention.platform === 'twitter' ? (
                       <FiTwitter className="h-4 w-4 text-blue-400" />
                     ) : (
                       <FiInstagram className="h-4 w-4 text-pink-500" />
                     )}
                   </div>
-                  <div className="ml-2 text-xs font-medium text-gray-900 dark:text-white">@user{item}</div>
-                  <div className="ml-auto text-xs text-gray-500 dark:text-gray-400">Just now</div>
+                  <div className="ml-2 text-xs font-medium text-gray-900 dark:text-white">@user{index + 1}</div>
+                  <div className="ml-auto text-xs text-gray-500 dark:text-gray-400">{mention.time}</div>
                 </div>
-                <div className="mt-1 text-sm text-gray-700 dark:text-gray-300">
-                  {item % 3 === 0
-                    ? "Loving the new features! Great job team! 👍"
-                    : item % 3 === 1
-                      ? "Interesting update, still exploring all the options."
-                      : "Having some issues with the latest version. Please fix."}
-                </div>
+                <div className="mt-1 text-sm text-gray-700 dark:text-gray-300">{mention.text}</div>
                 <div className="mt-1 flex items-center">
-                  <span className={`inline-block w-2 h-2 rounded-full ${item % 3 === 0 ? "bg-positive" : item % 3 === 1 ? "bg-neutral" : "bg-negative"
-                    }`}></span>
-                  <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">
-                    {item % 3 === 0 ? "Positive" : item % 3 === 1 ? "Neutral" : "Negative"}
-                  </span>
+                  <span className={`inline-block w-2 h-2 rounded-full ${mention.sentiment === 'Positive' ? "bg-green-500" : mention.sentiment === 'Neutral' ? "bg-yellow-500" : "bg-red-500"}`}></span>
+                  <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">{mention.sentiment}</span>
                 </div>
               </div>
             ))}
