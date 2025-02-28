@@ -1,16 +1,22 @@
 import { Bar } from 'react-chartjs-2'
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js'
 import { FiTwitter, FiInstagram } from 'react-icons/fi'
+import { useTheme } from '@/context/ThemeContext'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 function PlatformBreakdown() {
+  const { sentimentData } = useTheme()
+  let total = sentimentData.positive_score + sentimentData.negative_score + sentimentData.neutral_score
+  let pos = sentimentData.positive_score / total * 100
+  let neu = sentimentData.neutral_score / total * 100
+  let neg = sentimentData.negative_score / total * 100
   const twitterData = {
     labels: ['Positive', 'Neutral', 'Negative'],
     datasets: [
       {
         label: 'Percentage',
-        data: [65, 20, 15],
+        data: [pos, neu, neg],
         backgroundColor: [
           '#10B981', // positive
           '#F59E0B', // neutral
@@ -87,17 +93,17 @@ function PlatformBreakdown() {
         </div>
         <div className="mt-4 grid grid-cols-3 gap-2">
           <div className="text-center">
-            <div className="text-2xl font-bold text-positive text-green-400 ">65%</div>
+            <div className="text-2xl font-bold text-positive text-green-400 ">{pos.toFixed(2)}%</div>
             <div className="text-xs text-gray-500 dark:text-white">Positive</div>
             <div className="text-xs font-medium text-positive mt-1 text-green-400">+5% vs last week</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-black dark:text-white">20%</div>
+            <div className="text-2xl font-bold text-black dark:text-white">{neu.toFixed(2)}%</div>
             <div className="text-xs text-gray-500 dark:text-gray-400">Neutral</div>
             <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1">-2% vs last week</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-negative text-red-500">15%</div>
+            <div className="text-2xl font-bold text-negative text-red-500">{neg.toFixed(2)}%</div>
             <div className="text-xs text-gray-500 dark:text-gray-400">Negative</div>
             <div className="text-xs font-medium text-negative mt-1 text-red-500">-3% vs last week</div>
           </div>

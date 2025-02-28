@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { Line } from 'react-chartjs-2'
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'
+import { useTheme } from '@/context/ThemeContext'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
 function TrendingAnalysis() {
   const [timeframe, setTimeframe] = useState('7days')
   const [sentimentFilter, setSentimentFilter] = useState('all')
+  const { sentimentData } = useTheme()
 
   const timeframeOptions = [
     { value: '24hours', label: 'Last 24 Hours' },
@@ -44,27 +46,15 @@ function TrendingAnalysis() {
         : Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`),
     datasets: [
       {
-        label: 'Mentions',
+        label: 'Sentiment Score',
         data: timeframe === '24hours'
-          ? [12, 19, 15, 8, 5, 3, 7, 10, 15, 25, 30, 35, 25, 20, 15, 18, 22, 30, 25, 20, 15, 10, 8, 5]
+          ? [12, 19, 15, 8, 5, 3, 7, 10, 15, 25, 30, 35, 25, 20, 15, 18, 22, 30, 25, 20, 15, 10, sentimentData.prev_ovr_score, sentimentData.ovr_score]
           : timeframe === '7days'
-            ? [65, 75, 60, 80, 90, 100, 85]
+            ? [65, 75, 60, 80, 90, sentimentData.prev_ovr_score, sentimentData.ovr_score]
             : Array.from({ length: 30 }, () => Math.floor(Math.random() * 50) + 50),
         borderColor: '#4F46E5',
         backgroundColor: 'rgba(79, 70, 229, 0.1)',
         fill: true,
-        tension: 0.4,
-      },
-      {
-        label: 'Sentiment Score',
-        data: timeframe === '24hours'
-          ? [70, 75, 72, 68, 65, 60, 62, 68, 72, 75, 78, 80, 75, 72, 70, 72, 75, 78, 75, 72, 70, 68, 65, 62]
-          : timeframe === '7days'
-            ? [75, 78, 72, 80, 82, 85, 80]
-            : Array.from({ length: 30 }, () => Math.floor(Math.random() * 20) + 65),
-        borderColor: '#10B981',
-        backgroundColor: 'transparent',
-        borderDash: [5, 5],
         tension: 0.4,
       },
     ],
