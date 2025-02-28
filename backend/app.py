@@ -22,7 +22,6 @@ def initialize_collections(db):
         db[col].insert_one({"initialized": True})  
     return collections
 
-
 @app.route("/api/register", methods=["POST"])
 def register():
     """Register a new brand and create its own database in the cluster."""
