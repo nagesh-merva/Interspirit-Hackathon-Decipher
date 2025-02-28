@@ -13,9 +13,9 @@ import {
 
 
 const PieChartdiv = ({ chartData }) => {
-    const totalVisitors = useMemo(() => {
-        return chartData.reduce((acc, curr) => acc + curr.visitors, 0)
-    }, [])
+    // const totalVisitors = useMemo(() => {
+    //     return chartData.reduce((acc, curr) => acc + curr.visitors, 0)
+    // }, [])
 
     return (
         <Card className="flex flex-col">
@@ -23,7 +23,7 @@ const PieChartdiv = ({ chartData }) => {
                 <CardTitle>Pie Chart - Donut with Text</CardTitle>
                 <CardDescription>January - June 2024</CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 pb-0">
+            {/* <CardContent className="flex-1 pb-0">
                 <div className="mx-auto aspect-square max-h-[250px]">
                     <PieChart width={300} height={300}>
                         <Tooltip cursor={false} />
@@ -56,7 +56,7 @@ const PieChartdiv = ({ chartData }) => {
                 <div className="leading-none text-muted-foreground">
                     Showing total visitors for the last 6 months
                 </div>
-            </CardFooter>
+            </CardFooter> */}
         </Card>
     )
 }
