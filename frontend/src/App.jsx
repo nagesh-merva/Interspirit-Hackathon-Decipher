@@ -6,7 +6,7 @@ import Dashboard from "./pages/Dashboard"
 function App() {
 
   return (
-    <div className="md:flex justify-center items-center h-screen w-full ">
+    <div className="md:flex justify-center items-center h-screen w-full">
       <Routes>
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />

@@ -3,11 +3,13 @@ import React, { useState } from "react"
 // import PieChartdiv from "../components/dashboard/PieChartData"  
 import Positivesentiments from "@/components/dashboard/Positivesentiments"
 import Realtime from "@/components/dashboard/Realtime"
-import Sentiment from "@/components/dashboard/Sentiment"
 import Header from "@/components/layout/Header"
 import Sidebar from "@/components/layout/Sidebar"
 import { useTheme } from "@/context/ThemeContext"
 import SentimentSummary from "@/components/dashboard/SentimentSummary"
+import TrendingAnalysis from "@/components/dashboard/TrendingAnalysis"
+import PlatformBreakdown from "@/components/dashboard/PlatformBreakdown"
+import NegativeSentimentAlerts from "@/components/dashboard/NegativeSentimentAlerts"
 const chartData = [
     { browser: "chrome", visitors: 275, fill: "#4285F4" },
     { browser: "safari", visitors: 200, fill: "#FF9500" },
@@ -50,10 +52,10 @@ function Dashboard() {
     const { darkMode } = useTheme()
 
     return (
-        <div className={`flex h-screen w-full ${darkMode ? 'dark bg-slate-900' : ''}`}>
+        <div className={`flex h-full overflow-y-scroll w-full ${darkMode ? 'dark bg-slate-900' : ''}`}>
             <Sidebar isOpen={sidebarOpen} toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-            <div className="flex-1 flex flex-col space-y-6 overflow-hidden bg-background-light dark:bg-background-dark">
+            <div className="flex-1 flex flex-col space-y-6 overflow-hidden bg-background-light dark:bg-background-dark overflow-y-scroll">
                 <Header toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
                 <div className="space-y-6 mx-5 mt-2 ">
                     <div className="flex justify-between items-center">
@@ -65,10 +67,10 @@ function Dashboard() {
                     </div>
 
                     <SentimentSummary />
-                    {/* <TrendingAnalysis />
+                    <TrendingAnalysis />
                     <PlatformBreakdown />
                     <NegativeSentimentAlerts />
-                    <EngagementMonitoring /> */}
+                    {/* <EngagementMonitoring /> */}
                 </div>
             </div>
         </div>
