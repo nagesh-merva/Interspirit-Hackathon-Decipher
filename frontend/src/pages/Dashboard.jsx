@@ -3,6 +3,9 @@ import React from "react"
 import PieChartdiv from "../components/dashboard/PieChartData"  // Adjust path if necessary
 import Positivesentiments from "@/components/dashboard/Positivesentiments"
 import Realtime from "@/components/dashboard/Realtime"
+import Nevbar from "@/components/Nevbar"
+import Sentiment from "@/components/dashboard/Sentiment"
+import Header from "@/components/Header"
 const chartData = [
     { browser: "chrome", visitors: 275, fill: "#4285F4" },
     { browser: "safari", visitors: 200, fill: "#FF9500" },
@@ -43,7 +46,9 @@ const Recenttweets = [
 function Dashboard() {
     return (
         <div className="h-full w-full">
+            <Header />
             <Realtime Recenttweets={Recenttweets} />
+            <Sentiment />
             {/* <PieChartdiv chartData={chartData} /> */}
             {/* <Positivesentiments /> */}
         </div>

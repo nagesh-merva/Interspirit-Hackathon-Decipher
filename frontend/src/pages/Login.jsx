@@ -43,7 +43,7 @@ function Login() {
 
     return (
         <div className="md:flex justify-center items-center h-full w-full my-2">
-            <img src="./image.png" className="absolute w-full" />
+            <img src="./bg.png" className="absolute w-full" />
             <div className="h-full w-full md:w-2/5 bg-white shadow-lg rounded-lg p-20 z-10 ">
                 <div className="flex justify-center">
                     <h1 className="text-4xl font-bold">Create Account</h1>

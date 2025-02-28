@@ -36,7 +36,7 @@ const Realtime = () => {
     const sortedTweets = [...Recenttweets].sort((a, b) => new Date(b.date) - new Date(a.date));
 
     return (
-        <div className="p-6">
+        <div className="p-6 mt-15">
             <h1 className="text-3xl font-bold mb-4">Real-time Brand Mentions</h1>
             <div className="grid md:grid-cols-2 gap-6">
                 {sortedTweets.map((tweet, index) => (
