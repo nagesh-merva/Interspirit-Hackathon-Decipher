@@ -186,12 +186,7 @@ function SentimentTrends() {
             </div>
           </div>
 
-          <div className="card shadow-lg rounded-3xl p-4 dark:bg-gray-800">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Sentiment Over Time</h2>
-            <div className="h-80">
-              <Line data={trendData} options={trendOptions} />
-            </div>
-          </div>
+
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {sentimentMetrics.map((metric, index) => (
