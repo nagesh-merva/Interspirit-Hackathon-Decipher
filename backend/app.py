@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from pymongo import MongoClient
-import datetime
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 CORS(app) 
@@ -88,6 +88,7 @@ def login():
 @app.route("/api/getsenti_score", methods=["POST"])
 def get_senti_score():
     data = request.json
+    print(data)
     brand_name = data.get("brand_name")
     platform = data.get("platform")
     
@@ -103,8 +104,10 @@ def get_senti_score():
     tweets_collection = f"tweets_{brand_name}"
     comments_collection = f"instagram_comments_{brand_name}"
     
+    print(sentiments_collection)
+    
     # Get sentiment data for the platform
-    sentiment_data = db[sentiments_collection].find_one({"platform": {"$in": [platform, "all"]}})
+    sentiment_data = db[sentiments_collection].find_one({"platform": platform})
     
     if not sentiment_data:
         return jsonify({"error": "No sentiment data found for the platform"}), 404
@@ -113,10 +116,10 @@ def get_senti_score():
     positive_score = sentiment_data.get("positive_score", 0)
     negative_score = sentiment_data.get("negative_score", 0)
     neutral_score = sentiment_data.get("neutral_score", 0)
-    overall_score = sentiment_data.get("overall_score", 0)
+    overall_score = sentiment_data.get("ovr_score", 0)
     
     # Get recent tweets and comments (last 1 hour)
-    one_hour_ago = datetime.utcnow() - datetime.timedelta(hours=1)
+    one_hour_ago = datetime.utcnow() - timedelta(hours=1)
     
     recent_mentions = []
     if platform in ["twitter", "all"]:
@@ -141,7 +144,7 @@ def get_senti_score():
         "ovr_score": overall_score,
         "recent_mentions": mentions_list
     }
-    
+    print(response)
     return jsonify(response)
 
 if __name__ == "__main__":
