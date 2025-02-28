@@ -1,51 +1,10 @@
-import { useState } from 'react'
+import { useTheme } from '@/context/ThemeContext'
+import { useState, useEffect } from 'react'
 import { FiTwitter, FiInstagram, FiAlertTriangle } from 'react-icons/fi'
 
 function NegativeSentimentAlerts() {
   const [selectedTab, setSelectedTab] = useState('negative')
-
-  const negativeTweets = [
-    {
-      id: 1,
-      platform: 'twitter',
-      username: 'unhappyuser',
-      content: 'Your customer service is terrible! I\'ve been waiting for a response for 3 days now. #disappointed',
-      engagement: { likes: 45, retweets: 23, replies: 12 },
-      severity: 'high',
-    },
-    {
-      id: 2,
-      platform: 'instagram',
-      username: 'customer_feedback',
-      content: 'The new update is full of bugs. Can\'t even use the app properly anymore. Please fix ASAP!',
-      engagement: { likes: 32, comments: 18 },
-      severity: 'medium',
-    },
-    {
-      id: 3,
-      platform: 'twitter',
-      username: 'tech_reviewer',
-      content: 'The latest product release doesn\'t live up to the hype. Many features are half-baked and unusable.',
-      engagement: { likes: 78, retweets: 34, replies: 22 },
-      severity: 'medium',
-    },
-    {
-      id: 4,
-      platform: 'instagram',
-      username: 'daily_consumer',
-      content: 'Extremely disappointed with the quality. Not worth the premium price at all.',
-      engagement: { likes: 56, comments: 27 },
-      severity: 'high',
-    },
-    {
-      id: 5,
-      platform: 'twitter',
-      username: 'industry_watcher',
-      content: 'Your competitors are innovating while you\'re stagnating. Wake up before it\'s too late.',
-      engagement: { likes: 89, retweets: 45, replies: 32 },
-      severity: 'medium',
-    },
-  ]
+  const { negativeTweets, setNegativeTweets } = useTheme()
 
   const suggestedResponses = {
     1: 'We\'re sorry to hear about your experience. Our team is looking into this and will reach out to you directly to resolve this issue as quickly as possible.',
@@ -54,6 +13,26 @@ function NegativeSentimentAlerts() {
     4: 'We\'re sorry to hear you\'re disappointed. Please reach out to our support team so we can understand your concerns better and make it right.',
     5: 'We appreciate your perspective. Innovation is at the core of our roadmap, and we\'re excited to share our upcoming developments soon.',
   }
+
+
+
+  // Map the fetched tweets to the required structure if necessary.
+  // Here we assume the backend returns tweets with keys like:
+  // _id, tweet, username, likes, retweets, sentiment, severity, etc.
+  const mappedTweets = negativeTweets.map(tweet => ({
+    id: tweet._id,
+    // If the backend doesn't include a platform, default to 'twitter'
+    platform: tweet.platform || "twitter",
+    username: tweet.username,
+    content: tweet.tweet, // map tweet text to content
+    engagement: {
+      likes: tweet.likes,
+      retweets: tweet.retweets,
+      replies: tweet.replies || 0,
+      comments: tweet.comments || 0,
+    },
+    severity: tweet.severity
+  }))
 
   return (
     <div className="card mt-6 dark:bg-gray-800 p-4 mb-2 rounded-3xl shadow-sm">
@@ -105,7 +84,7 @@ function NegativeSentimentAlerts() {
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
-                {negativeTweets.map((tweet) => (
+                {mappedTweets.map((tweet) => (
                   <tr key={tweet.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">

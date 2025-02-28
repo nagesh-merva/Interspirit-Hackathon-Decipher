@@ -83,6 +83,7 @@ def login():
 
     return jsonify({"error": "Invalid credentials"}), 401
 
+#get sentiment score
 
 @app.route("/api/getsenti_score", methods=["POST"])
 def get_senti_score():
@@ -152,6 +153,51 @@ def get_senti_score():
     }
     print(response)
     return jsonify(response)
+
+# get all negative sentiments 
+def determine_severity(score):
+    """
+    Calculate tweet severity based on its score.
+    Adjust threshold values as needed.
+    """
+    try:
+        score_val = float(score)
+    except Exception:
+        return "unknown"
+    if score_val >= 1:
+        return "high"
+    elif score_val >= 0.5:
+        return "medium"
+    else:
+        return "low"
+
+@app.route("/api/get_negative_tweets", methods=["POST"])
+def get_negative_tweets():
+    data = request.json
+    brand_name = data.get("brand_name")
+    
+    if not brand_name:
+        return jsonify({"error": "brand_name is required"}), 400
+
+    # Check if the brand database exists
+    if brand_name not in client.list_database_names():
+        return jsonify({"error": "Brand database does not exist"}), 404
+
+    db = client[brand_name]
+    tweets_collection = f"tweets_{brand_name}"
+    
+    # Query for tweets with sentiment 'negative' (case-insensitive)
+    negative_tweets = list(db[tweets_collection].find({
+        "sentiment": {"$regex": "^negative$", "$options": "i"}
+    }))
+
+    # For each tweet, compute severity based on score and convert ObjectId to string.
+    for tweet in negative_tweets:
+        tweet["_id"] = str(tweet["_id"])
+        tweet["severity"] = determine_severity(tweet.get("score", 0))
+    
+    return jsonify(negative_tweets), 200
+
 
 if __name__ == "__main__":
     app.run(debug=True)

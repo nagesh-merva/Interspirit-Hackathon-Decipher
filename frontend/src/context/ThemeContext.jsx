@@ -28,12 +28,16 @@ export function ThemeProvider({ children }) {
     recent_mentions: []
   })
 
+  const [negativeTweets, setNegativeTweets] = useState([])
+
   return (
     <ThemeContext.Provider value={{
       darkMode,
       toggleDarkMode,
       sentimentData,
-      setSentimentData
+      setSentimentData,
+      negativeTweets,
+      setNegativeTweets
     }}>
       {children}
     </ThemeContext.Provider>

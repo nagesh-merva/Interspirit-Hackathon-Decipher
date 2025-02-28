@@ -9,7 +9,35 @@ ChartJS.register(ArcElement, Tooltip, Legend)
 function SentimentSummary() {
   const [timeframe, setTimeframe] = useState('daily')
   const [platform, setPlatform] = useState('all')
-  const { sentimentData, setSentimentData } = useTheme()
+  const { sentimentData, setSentimentData, negativeTweets, setNegativeTweets } = useTheme()
+
+  useEffect(() => {
+    async function fetchNegativeTweets() {
+      try {
+        const response = await fetch('http://127.0.0.1:5000/api/get_negative_tweets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ brand_name: "boAt" })
+        })
+
+        // Log the raw response
+        console.log('Raw response:', response)
+
+        const data = await response.json()
+        console.log('Fetched negative tweets:', data)
+
+        // If data is not an array, log an error
+        if (!Array.isArray(data)) {
+          console.error('Response data is not an array:', data)
+        }
+
+        setNegativeTweets(data)
+      } catch (error) {
+        console.error('Error fetching negative tweets:', error)
+      }
+    }
+    fetchNegativeTweets()
+  }, [])
 
   useEffect(() => {
     async function fetchSentimentData() {
