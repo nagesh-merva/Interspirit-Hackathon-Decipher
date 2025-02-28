@@ -2,6 +2,7 @@ import React from "react"
 import Register from "./pages/register"
 import { Routes, Route } from "react-router-dom"
 import Login from "./pages/login"
+import Nevbar from "./components/Nevbar"
 function App() {
 
   return (
@@ -9,6 +10,7 @@ function App() {
       <Routes>
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/nevbar" element={<Nevbar />} />
       </Routes>
     </div>
   )
