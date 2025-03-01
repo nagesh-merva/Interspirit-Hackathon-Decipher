@@ -38,7 +38,7 @@ function SentimentTrends() {
   const sentimentMetrics = [
     {
       title: 'Average Sentiment Score',
-      value: sentimentData.avg_sentiment_score.toFixed(2) + '/100',
+      value: sentimentData.avg_sentiment_score + '/100',
       change: '+5%',
       trend: 'up',
       description: 'Overall sentiment has improved over the selected period.'
@@ -52,7 +52,7 @@ function SentimentTrends() {
     },
     {
       title: 'Negative Mention Rate',
-      value: sentimentData.neg_pos_ratio.toFixed(2) * 100 + '%',
+      value: sentimentData.neg_pos_ratio * 100 + '%',
       change: '-3.1%',
       trend: 'down',
       description: 'Negative mentions have decreased significantly.'

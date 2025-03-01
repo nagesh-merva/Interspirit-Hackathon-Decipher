@@ -293,30 +293,31 @@ def calculate_sentiment():
         volatility_level = "Low"
 
     if negative_score > 0:
-        pos_neg_ratio = positive_score / negative_score
+        pos_neg_ratio = round(positive_score / negative_score, 2)
     else:
-        pos_neg_ratio = float('inf')
+        pos_neg_ratio = float('inf')  # Keep it as infinity for handling
 
     if positive_score > 0:
-        neg_pos_ratio = negative_score / positive_score
+        neg_pos_ratio = round(negative_score / positive_score, 2)
     else:
         neg_pos_ratio = float('inf')
 
     if total_count > 0:
-        avg_sentiment_score = abs(((positive_score * 1 + neutral_score * 0 + negative_score * -1) / total_count) * 100)
+        avg_sentiment_score = round(abs(((positive_score * 1 + neutral_score * 0 + negative_score * -1) / total_count) * 100), 2)
     else:
-        avg_sentiment_score = 0
+        avg_sentiment_score = 0.00  # Ensure float with two decimal places
 
     response = {
         "volatility_level": volatility_level,
-        "pos_neg_ratio": pos_neg_ratio,
-        "neg_pos_ratio": neg_pos_ratio,
+        "pos_neg_ratio": pos_neg_ratio if pos_neg_ratio != float('inf') else "inf",
+        "neg_pos_ratio": neg_pos_ratio if neg_pos_ratio != float('inf') else "inf",
         "avg_sentiment_score": avg_sentiment_score
     }
     
     print(response)
 
     return jsonify(response)
+
 
 #get hashtags with senitments 
 @app.route("/api/get_hashtag_sentiments", methods=["POST"])
