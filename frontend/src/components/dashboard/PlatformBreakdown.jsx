@@ -21,6 +21,12 @@ function PlatformBreakdown() {
     neg: 0
   });
 
+  const [percentagesInsta, setPercentagesInsta] = useState({
+    pos: 0,
+    neu: 0,
+    neg: 0
+  });
+
   useEffect(() => {
     async function fetchSentimentData() {
       try {
@@ -37,6 +43,35 @@ function PlatformBreakdown() {
         const total = data.positive_score + data.negative_score + data.neutral_score;
         if (total > 0) {
           setPercentages({
+            pos: (data.positive_score / total * 100),
+            neu: (data.neutral_score / total * 100),
+            neg: (data.negative_score / total * 100)
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching sentiment data:', error);
+      }
+    }
+
+    fetchSentimentData();
+  }, []);
+
+  useEffect(() => {
+    async function fetchSentimentData() {
+      try {
+        const response = await fetch('http://127.0.0.1:5000/api/getsenti_score', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ brand_name: "boAt", platform: "instagram" }),
+        });
+        const data = await response.json();
+        console.log(data);
+        setSentimentData(data);
+
+        // Calculate percentages after setting the data
+        const total = data.positive_score + data.negative_score + data.neutral_score;
+        if (total > 0) {
+          setPercentagesInsta({
             pos: (data.positive_score / total * 100),
             neu: (data.neutral_score / total * 100),
             neg: (data.negative_score / total * 100)
@@ -72,7 +107,7 @@ function PlatformBreakdown() {
     datasets: [
       {
         label: 'Percentage',
-        data: [70, 25, 5],
+        data: [percentagesInsta.pos, percentagesInsta.neu, percentagesInsta.neg],
         backgroundColor: [
           '#10B981', // positive
           '#F59E0B', // neutral
@@ -159,17 +194,17 @@ function PlatformBreakdown() {
         </div>
         <div className="mt-4 grid grid-cols-3 gap-2">
           <div className="text-center">
-            <div className="text-2xl font-bold text-positive text-green-400">70%</div>
+            <div className="text-2xl font-bold text-positive text-green-400">{percentagesInsta.pos.toFixed(2)}%</div>
             <div className="text-xs text-gray-500 dark:text-gray-400">Positive</div>
             <div className="text-xs font-medium text-positive mt-1 text-green-400">+8% vs last week</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-neutral text-black dark:text-white">25%</div>
+            <div className="text-2xl font-bold text-neutral text-black dark:text-white">{percentagesInsta.neu.toFixed(2)}%</div>
             <div className="text-xs text-gray-500 dark:text-gray-400">Neutral</div>
             <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1">-3% vs last week</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-negative text-red-500">5%</div>
+            <div className="text-2xl font-bold text-negative text-red-500">{percentagesInsta.neg.toFixed(2)}%</div>
             <div className="text-xs text-gray-500 dark:text-gray-400">Negative</div>
             <div className="text-xs font-medium text-negative mt-1 text-red-500">-5% vs last week</div>
           </div>

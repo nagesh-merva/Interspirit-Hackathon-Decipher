@@ -306,7 +306,12 @@ function SentimentSummary() {
                   <div className="ml-2 text-xs font-medium text-gray-900 dark:text-white">@user{index + 1}</div>
                   <div className="ml-auto text-xs text-gray-500 dark:text-gray-400">{mention.date}</div>
                 </div>
-                <div className="mt-1 text-sm text-gray-700 dark:text-gray-300">{mention.tweet}</div>
+                {mention.platform === "twitter" ? (
+                  <div className="mt-1 text-sm text-gray-700 dark:text-gray-300">{mention.tweet}</div>
+                ) : (
+                  <div className="mt-1 text-sm text-gray-700 dark:text-gray-300">{mention.text}</div>
+                )}
+
                 <div className="mt-1 flex items-center">
                   <span className={`inline-block w-2 h-2 rounded-full ${mention.sentiment === 'Positive' ? "bg-green-500" : mention.sentiment === 'Neutral' ? "bg-yellow-500" : "bg-red-500"}`}></span>
                   <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">{mention.sentiment}</span>

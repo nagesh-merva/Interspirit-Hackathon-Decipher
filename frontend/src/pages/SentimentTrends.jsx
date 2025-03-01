@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Line } from 'react-chartjs-2'
 import { useTheme } from "@/context/ThemeContext"
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'
@@ -16,112 +16,50 @@ function SentimentTrends() {
   const [startDate, endDate] = dateRange
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const { darkMode } = useTheme()
+  const [sentimentData, setSentimentData] = useState([])
 
-  // Sample data for sentiment trends
-  const trendData = {
-    labels: Array.from({ length: 31 }, (_, i) => `Day ${i + 1}`),
-    datasets: [
-      {
-        label: 'Positive',
-        data: Array.from({ length: 31 }, () => Math.floor(Math.random() * 30) + 50),
-        borderColor: '#10B981',
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-        fill: true,
-        tension: 0.4,
-      },
-      {
-        label: 'Neutral',
-        data: Array.from({ length: 31 }, () => Math.floor(Math.random() * 20) + 15),
-        borderColor: '#F59E0B',
-        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-        fill: true,
-        tension: 0.4,
-      },
-      {
-        label: 'Negative',
-        data: Array.from({ length: 31 }, () => Math.floor(Math.random() * 15) + 5),
-        borderColor: '#EF4444',
-        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-        fill: true,
-        tension: 0.4,
-      },
-    ],
-  }
-
-  const trendOptions = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top',
-        labels: {
-          usePointStyle: true,
-          color: '#6B7280',
-        },
-      },
-      tooltip: {
-        mode: 'index',
-        intersect: false,
-      },
-    },
-    scales: {
-      y: {
-        stacked: true,
-        beginAtZero: true,
-        max: 100,
-        title: {
-          display: true,
-          text: 'Percentage',
-          color: '#6B7280',
-        },
-        grid: {
-          color: 'rgba(156, 163, 175, 0.1)',
-        },
-        ticks: {
-          color: '#6B7280',
-          callback: function (value) {
-            return value + '%'
-          }
-        },
-      },
-      x: {
-        grid: {
-          display: false,
-        },
-        ticks: {
-          color: '#6B7280',
-          maxRotation: 45,
-          minRotation: 45,
-        },
-      },
-    },
-  }
-
-  // Sample data for sentiment metrics
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await fetch('http://127.0.0.1:5000/api/calculate-sentiment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ brand_name: "boAt", platform }),
+        })
+        const data = await response.json();
+        setSentimentData(data);
+        console.log(data)
+      } catch (error) {
+        console.error('Error fetching sentiment data:', error);
+      }
+    }
+    fetchData();
+  }, []);
   const sentimentMetrics = [
     {
       title: 'Average Sentiment Score',
-      value: '72/100',
+      value: sentimentData.avg_sentiment_score.toFixed(2) + '/100',
       change: '+5%',
       trend: 'up',
       description: 'Overall sentiment has improved over the selected period.'
     },
     {
       title: 'Sentiment Volatility',
-      value: 'Medium',
+      value: sentimentData.volatility_level,
       change: '-2%',
       trend: 'down',
       description: 'Sentiment stability has improved slightly.'
     },
     {
       title: 'Negative Mention Rate',
-      value: '8.3%',
+      value: sentimentData.neg_pos_ratio.toFixed(2) * 100 + '%',
       change: '-3.1%',
       trend: 'down',
       description: 'Negative mentions have decreased significantly.'
     },
     {
       title: 'Positive to Negative Ratio',
-      value: '6.2:1',
+      value: sentimentData.pos_neg_ratio + ':1',
       change: '+0.8',
       trend: 'up',
       description: 'The ratio of positive to negative mentions has improved.'

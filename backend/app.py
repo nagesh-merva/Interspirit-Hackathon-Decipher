@@ -85,6 +85,7 @@ def login():
 
 #get sentiment score
 
+
 @app.route("/api/getsenti_score", methods=["POST"])
 def get_senti_score():
     data = request.json
@@ -103,8 +104,6 @@ def get_senti_score():
     tweets_collection = f"tweets_{brand_name}"
     comments_collection = f"instagram_comments_{brand_name}"
     
-    print(sentiments_collection)
-    
     sentiment_data = db[sentiments_collection].find_one({"platform": platform})
     
     if not sentiment_data:
@@ -118,17 +117,15 @@ def get_senti_score():
  
     recent_mentions = []
     if platform in ["twitter", "all"]:
-        recent_tweets = list(db[tweets_collection]
-                             .find()
-                             .sort("date", -1) 
-                             .limit(10))
+        recent_tweets = list(db[tweets_collection].find().sort("date", -1).limit(10))
+        for tweet in recent_tweets:
+            tweet["platform"] = "twitter"
         recent_mentions.extend(recent_tweets)
     
     if platform in ["instagram", "all"]:
-        recent_comments = list(db[comments_collection]
-                               .find()
-                               .sort("date", -1)  
-                               .limit(10))
+        recent_comments = list(db[comments_collection].find().sort("date", -1).limit(10))
+        for comment in recent_comments:
+            comment["platform"] = "instagram"
         recent_mentions.extend(recent_comments)
 
     mentions_list = []
@@ -138,10 +135,8 @@ def get_senti_score():
             mention["date"] = datetime.fromisoformat(mention["date"]).strftime("%Y-%m-%d %H:%M:%S")
         mentions_list.append(mention)
     
- 
     mentions_list.sort(key=lambda x: x.get("date", ""), reverse=True)
 
-    
     response = {
         "platform": platform,
         "positive_score": positive_score,
@@ -191,8 +186,32 @@ def get_negative_tweets():
 
     for tweet in negative_tweets:
         tweet["severity"] = determine_severity(tweet.get("score", 0))
-    
+        tweet["platform"] = "twitter"
     return jsonify(negative_tweets), 200
+
+@app.route("/api/get_negative_comments", methods=["POST"])
+def get_negative_comments():
+    data = request.json
+    brand_name = data.get("brand_name")
+    
+    if not brand_name:
+        return jsonify({"error": "brand_name is required"}), 400
+
+    if brand_name not in client.list_database_names():
+        return jsonify({"error": "Brand database does not exist"}), 404
+
+    db = client[brand_name]
+    comments_collection = f"instagram_comments_{brand_name}"
+    
+    negative_comments = list(db[comments_collection].find({
+        "sentiment": {"$regex": "^negative$", "$options": "i"}
+    }, {"_id": 0, "date": 0}))
+
+    for comment in negative_comments:
+        comment["severity"] = determine_severity(comment.get("score", 0))
+        comment["platform"] = "instagram"  
+
+    return jsonify(negative_comments), 200
 
 
 @app.route("/api/get_emotion_counts", methods=["POST"])
@@ -294,6 +313,8 @@ def calculate_sentiment():
         "neg_pos_ratio": neg_pos_ratio,
         "avg_sentiment_score": avg_sentiment_score
     }
+    
+    print(response)
 
     return jsonify(response)
 
