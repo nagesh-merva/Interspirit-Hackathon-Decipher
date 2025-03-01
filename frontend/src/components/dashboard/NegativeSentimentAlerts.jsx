@@ -146,6 +146,11 @@ function NegativeSentimentAlerts() {
                           : 'Unknown'}
                       </span>
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <a href='https://x.com/home' target='_blank' className="text-blue-700 bg-blue-300 px-4 py-2 rounded-full hover:text-white hover:bg-blue-900 dark:text-slate-700 dark:hover:text-black">
+                        Respond
+                      </a>
+                    </td>
                   </tr>
                 ))}
               </tbody>
