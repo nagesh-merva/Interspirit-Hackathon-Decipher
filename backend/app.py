@@ -2,11 +2,97 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from pymongo import MongoClient
 from datetime import datetime, timedelta
+import google.generativeai as genai
+import json
+import os
+from typing import List, Dict
 
 app = Flask(__name__)
 CORS(app) 
 
 client = MongoClient("mongodb+srv://nageshgenai22:IB4LVRkoNwmrjZX3@decipher.wmjlx.mongodb.net/") 
+
+# Configure Gemini API
+# Make sure to set your API key as an environment variable: GEMINI_API_KEY
+genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
+model = genai.GenerativeModel('gemini-pro')
+
+def analyze_emotion_with_gemini(tweet_text: str) -> str:
+    """
+    Analyze emotion of a tweet using Gemini AI.
+    Returns a single emotion word.
+    """
+    try:
+        prompt = f"""
+        Analyze the emotion in this tweet and respond with only ONE word that best describes the primary emotion.
+        Choose from: joy, anger, sadness, fear, surprise, disgust, neutral, excitement, love, disappointment, frustration, pride, gratitude, curiosity, anxiety, hope, confidence, nostalgia, embarrassment, admiration
+        
+        Tweet: "{tweet_text}"
+        
+        Response format: Just one emotion word, nothing else.
+        """
+        
+        response = model.generate_content(prompt)
+        emotion = response.text.strip().lower()
+        
+        # Validate the emotion is a single word
+        if ' ' in emotion or len(emotion.split()) > 1:
+            emotion = emotion.split()[0]
+            
+        return emotion
+        
+    except Exception as e:
+        print(f"Error analyzing emotion with Gemini: {e}")
+        return "neutral"
+
+def analyze_sentiment_with_gemini(tweet_text: str) -> str:
+    """
+    Analyze sentiment of a tweet using Gemini AI.
+    Returns positive, negative, or neutral.
+    """
+    try:
+        prompt = f"""
+        Analyze the sentiment of this tweet and respond with only ONE word.
+        Choose from: positive, negative, neutral
+        
+        Tweet: "{tweet_text}"
+        
+        Response format: Just one sentiment word, nothing else.
+        """
+        
+        response = model.generate_content(prompt)
+        sentiment = response.text.strip().lower()
+        
+        # Ensure valid sentiment
+        if sentiment not in ['positive', 'negative', 'neutral']:
+            sentiment = 'neutral'
+            
+        return sentiment
+        
+    except Exception as e:
+        print(f"Error analyzing sentiment with Gemini: {e}")
+        return "neutral"
+
+def process_tweets_emotions(tweets: List[Dict]) -> List[Dict]:
+    """
+    Process a list of tweets to add emotion and sentiment analysis.
+    """
+    processed_tweets = []
+    
+    for tweet in tweets:
+        if not tweet.get('processed', False):
+            # Analyze emotion and sentiment
+            emotion = analyze_emotion_with_gemini(tweet['tweet'])
+            sentiment = analyze_sentiment_with_gemini(tweet['tweet'])
+            
+            # Update tweet data
+            tweet['emotion'] = [emotion] if emotion else []
+            tweet['sentiment'] = sentiment
+            tweet['processed'] = True
+            
+        processed_tweets.append(tweet)
+    
+    return processed_tweets
 
 def initialize_collections(db):
     """Initialize all required collections with empty data."""
@@ -47,7 +133,7 @@ def register():
         "brand_name": brand_name,
         "twitter_handle": twitter_handle,
         "hashtags": hashtags,
-        "created_at": datetime.datetime.utcnow(),
+        "created_at": datetime.utcnow(),
         "last_fetched": None,
         "collections": collections,
         "email": email,
@@ -57,7 +143,6 @@ def register():
     brand_db["Profile"].insert_one(brand_profile)
 
     return jsonify({"message": "Brand registered successfully", "brand": brand_name}), 201
-
 
 @app.route("/api/login", methods=["POST"])
 def login():
@@ -83,8 +168,78 @@ def login():
 
     return jsonify({"error": "Invalid credentials"}), 401
 
-#get sentiment score
+@app.route("/api/process_tweets_emotions", methods=["POST"])
+def process_tweets_emotions_endpoint():
+    """
+    New endpoint to process unprocessed tweets and add emotion/sentiment analysis.
+    """
+    data = request.json
+    brand_name = data.get("brand_name")
+    
+    if not brand_name:
+        return jsonify({"error": "brand_name is required"}), 400
+    
+    if brand_name not in client.list_database_names():
+        return jsonify({"error": "Brand database does not exist"}), 404
+    
+    db = client[brand_name]
+    tweets_collection = f"tweets_{brand_name}"
+    
+    # Find unprocessed tweets
+    unprocessed_tweets = list(db[tweets_collection].find({"processed": {"$ne": True}}))
+    
+    if not unprocessed_tweets:
+        return jsonify({"message": "No unprocessed tweets found", "processed_count": 0}), 200
+    
+    # Process emotions for unprocessed tweets
+    processed_tweets = process_tweets_emotions(unprocessed_tweets)
+    
+    # Update tweets in database
+    for tweet in processed_tweets:
+        db[tweets_collection].update_one(
+            {"_id": tweet["_id"]},
+            {"$set": {
+                "emotion": tweet["emotion"],
+                "sentiment": tweet["sentiment"],
+                "processed": tweet["processed"]
+            }}
+        )
+    
+    return jsonify({
+        "message": "Tweets processed successfully",
+        "processed_count": len(processed_tweets)
+    }), 200
 
+@app.route("/api/add_tweet_with_emotion", methods=["POST"])
+def add_tweet_with_emotion():
+    """
+    Add a new tweet and automatically process its emotion and sentiment.
+    """
+    data = request.json
+    brand_name = data.get("brand_name")
+    tweet_data = data.get("tweet_data")
+    
+    if not brand_name or not tweet_data:
+        return jsonify({"error": "brand_name and tweet_data are required"}), 400
+    
+    if brand_name not in client.list_database_names():
+        return jsonify({"error": "Brand database does not exist"}), 404
+    
+    db = client[brand_name]
+    tweets_collection = f"tweets_{brand_name}"
+    
+    # Process emotion and sentiment for the new tweet
+    processed_tweets = process_tweets_emotions([tweet_data])
+    processed_tweet = processed_tweets[0]
+    
+    # Insert the processed tweet
+    result = db[tweets_collection].insert_one(processed_tweet)
+    processed_tweet["_id"] = str(result.inserted_id)
+    
+    return jsonify({
+        "message": "Tweet added and processed successfully",
+        "tweet": processed_tweet
+    }), 201
 
 @app.route("/api/getsenti_score", methods=["POST"])
 def get_senti_score():
@@ -149,7 +304,6 @@ def get_senti_score():
     print(response)
     return jsonify(response)
 
-# get all negative sentiments 
 def determine_severity(score):
     """
     Calculate tweet severity based on its score.
@@ -213,7 +367,6 @@ def get_negative_comments():
 
     return jsonify(negative_comments), 200
 
-
 @app.route("/api/get_emotion_counts", methods=["POST"])
 def get_emotion_counts():
     data = request.json
@@ -249,8 +402,6 @@ def get_emotion_counts():
     result = [{"emotion": k, "count": v} for k, v in emotion_counts.items()]
     
     return jsonify(result), 200
-
-# get sentiments values 
 
 @app.route('/api/calculate-sentiment', methods=['POST'])
 def calculate_sentiment():
@@ -318,7 +469,6 @@ def calculate_sentiment():
 
     return jsonify(response)
 
-#get hashtags with senitments 
 @app.route("/api/get_hashtag_sentiments", methods=["POST"])
 def get_hashtag_sentiments_unique():
     data = request.json

@@ -7,6 +7,8 @@ from datetime import datetime
 import logging
 from collections import Counter
 import re
+import google.generativeai as genai
+import time
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -24,9 +26,107 @@ class TweetProcessor:
         self.sentiments_collection = f"sentiments_{self.db_name}"
         self.profile_collection = "Profile"
         
+        # Initialize Gemini AI
+        self.initialize_gemini()
+        
         logger.info(f"Initialized processor for username: {self.username}")
         logger.info(f"Database: {self.db_name}")
         logger.info(f"Collections: {self.tweets_collection}, {self.sentiments_collection}")
+
+    def initialize_gemini(self):
+        """Initialize Gemini AI with API key"""
+        try:
+            # Set the API key directly
+            api_key = "AIzaSyBOusJrsk4zJrVkIb3R-H-QSyfmfvnVgg4"
+            
+            genai.configure(api_key=api_key)
+            self.model = genai.GenerativeModel('gemini-2.0-flash')
+            self.gemini_available = True
+            logger.info("✅ Gemini AI initialized successfully")
+            
+        except Exception as e:
+            logger.error(f"Failed to initialize Gemini AI: {e}")
+            logger.warning("Falling back to rule-based sentiment analysis")
+            self.gemini_available = False
+
+    def analyze_emotion_with_gemini(self, tweet_text):
+        """
+        Analyze emotion of a tweet using Gemini AI.
+        Returns a single emotion word.
+        """
+        if not self.gemini_available or not tweet_text:
+            return "neutral"
+            
+        try:
+            prompt = f"""
+            Analyze the emotion in this tweet and respond with only ONE word that best describes the primary emotion.
+            Choose from: joy, anger, sadness, fear, surprise, disgust, neutral, excitement, love, disappointment, frustration, pride, gratitude, curiosity, anxiety, hope, confidence, nostalgia, embarrassment, admiration
+            
+            Tweet: "{tweet_text}"
+            
+            Response format: Just one emotion word, nothing else.
+            """
+            
+            response = self.model.generate_content(prompt)
+            emotion = response.text.strip().lower()
+            
+            # Validate the emotion is a single word
+            if ' ' in emotion or len(emotion.split()) > 1:
+                emotion = emotion.split()[0]
+                
+            logger.debug(f"Gemini emotion analysis: '{tweet_text[:50]}...' -> {emotion}")
+            return emotion
+            
+        except Exception as e:
+            logger.error(f"Error analyzing emotion with Gemini: {e}")
+            return "neutral"
+
+    def analyze_sentiment_with_gemini(self, tweet_text):
+        """
+        Analyze sentiment of a tweet using Gemini AI.
+        Returns sentiment and confidence score.
+        """
+        if not self.gemini_available or not tweet_text:
+            return "neutral", 3
+            
+        try:
+            prompt = f"""
+            Analyze the sentiment of this tweet and provide:
+            1. Sentiment: positive, negative, or neutral
+            2. Confidence score: 1-5 (where 1=very negative, 2=negative, 3=neutral, 4=positive, 5=very positive)
+            
+            Tweet: "{tweet_text}"
+            
+            Response format: sentiment,score (example: positive,4)
+            """
+            
+            response = self.model.generate_content(prompt)
+            result = response.text.strip().lower()
+            
+            # Parse response
+            if ',' in result:
+                sentiment, score_str = result.split(',', 1)
+                sentiment = sentiment.strip()
+                try:
+                    score = int(float(score_str.strip()))
+                    score = max(1, min(5, score))  # Ensure score is between 1-5
+                except:
+                    score = 3
+            else:
+                sentiment = result.strip()
+                score = 3
+            
+            # Validate sentiment
+            if sentiment not in ['positive', 'negative', 'neutral']:
+                sentiment = 'neutral'
+                score = 3
+                
+            logger.debug(f"Gemini sentiment analysis: '{tweet_text[:50]}...' -> {sentiment}, {score}")
+            return sentiment, score
+            
+        except Exception as e:
+            logger.error(f"Error analyzing sentiment with Gemini: {e}")
+            return "neutral", 3
 
     def load_username(self):
         """Load USERNAME from tweet_extract.py"""
@@ -57,13 +157,13 @@ class TweetProcessor:
             logger.error(f"Error parsing tweets.json: {e}")
             return []
 
-    def analyze_sentiment(self, text):
+    def analyze_sentiment_fallback(self, text):
         """
-        Advanced sentiment analysis using keyword matching and patterns
+        Fallback sentiment analysis using keyword matching (when Gemini is unavailable)
         Returns: sentiment (positive/negative/neutral), score (1-5), emotions
         """
         if not text or not isinstance(text, str):
-            return "neutral", 3, []
+            return "neutral", 3, ["neutral"]
 
         text_lower = text.lower()
         
@@ -106,6 +206,9 @@ class TweetProcessor:
             if any(keyword in text_lower for keyword in keywords):
                 detected_emotions.append(emotion)
         
+        if not detected_emotions:
+            detected_emotions = ["neutral"]
+        
         # Analyze punctuation and patterns
         exclamation_count = text.count('!')
         caps_ratio = sum(1 for c in text if c.isupper()) / len(text) if text else 0
@@ -138,15 +241,24 @@ class TweetProcessor:
         if not text:
             return []
         hashtags = re.findall(r'#(\w+)', text, re.IGNORECASE)
-        return [f"#{tag.lower()}" for tag in hashtags]
+        return [tag.lower() for tag in hashtags]
 
     def process_tweet_data(self, tweet):
         """Process individual tweet and add sentiment analysis"""
         # Get tweet text
         tweet_text = tweet.get('tweet', '') or tweet.get('text', '')
         
-        # Analyze sentiment
-        sentiment, score, emotions = self.analyze_sentiment(tweet_text)
+        if self.gemini_available:
+            # Use Gemini AI for analysis
+            sentiment, score = self.analyze_sentiment_with_gemini(tweet_text)
+            emotion = self.analyze_emotion_with_gemini(tweet_text)
+            emotions = [emotion] if emotion else ["neutral"]
+            
+            # Add small delay to avoid rate limiting
+            time.sleep(0.1)
+        else:
+            # Use fallback analysis
+            sentiment, score, emotions = self.analyze_sentiment_fallback(tweet_text)
         
         # Extract hashtags
         hashtags = self.extract_hashtags(tweet_text)
@@ -159,7 +271,8 @@ class TweetProcessor:
             'hashtags': hashtags,
             'processed': True,
             'processed_at': datetime.utcnow(),
-            'platform': 'twitter'
+            'platform': 'twitter',
+            'analysis_method': 'gemini' if self.gemini_available else 'fallback'
         })
         
         return tweet
@@ -175,7 +288,8 @@ class TweetProcessor:
                 'ovr_score': 0,
                 'prev_ovr_score': 0,
                 'total_tweets': 0,
-                'last_updated': datetime.utcnow()
+                'last_updated': datetime.utcnow(),
+                'analysis_method': 'gemini' if self.gemini_available else 'fallback'
             }
         
         sentiment_counts = Counter()
@@ -203,7 +317,8 @@ class TweetProcessor:
             'ovr_score': round(avg_score * 20, 2),  # Scale to 0-100
             'prev_ovr_score': prev_ovr_score,
             'total_tweets': total_tweets,
-            'last_updated': datetime.utcnow()
+            'last_updated': datetime.utcnow(),
+            'analysis_method': 'gemini' if self.gemini_available else 'fallback'
         }
 
     def upload_tweets_to_db(self, tweets):
@@ -267,7 +382,8 @@ class TweetProcessor:
             update_data = {
                 'last_processed': datetime.utcnow(),
                 'total_processed_tweets': total_processed,
-                'last_fetched': datetime.utcnow()
+                'last_fetched': datetime.utcnow(),
+                'gemini_enabled': self.gemini_available
             }
             
             result = profile_collection.update_one(
@@ -284,7 +400,7 @@ class TweetProcessor:
     def process_all_tweets(self):
         """Main processing function"""
         logger.info("=" * 50)
-        logger.info("STARTING TWEET PROCESSING")
+        logger.info("STARTING TWEET PROCESSING WITH GEMINI AI")
         logger.info("=" * 50)
         
         try:
@@ -295,14 +411,19 @@ class TweetProcessor:
                 return
             
             # Step 2: Process each tweet (add sentiment analysis)
-            logger.info("Processing tweets with sentiment analysis...")
+            analysis_method = "Gemini AI" if self.gemini_available else "Fallback Rule-based"
+            logger.info(f"Processing tweets with {analysis_method} sentiment analysis...")
             processed_tweets = []
             
-            for tweet in raw_tweets:
+            total_tweets = len(raw_tweets)
+            for i, tweet in enumerate(raw_tweets, 1):
+                if i % 10 == 0 or i == total_tweets:
+                    logger.info(f"Processing tweet {i}/{total_tweets}")
+                
                 processed_tweet = self.process_tweet_data(tweet)
                 processed_tweets.append(processed_tweet)
             
-            logger.info(f"Processed {len(processed_tweets)} tweets with sentiment analysis")
+            logger.info(f"Processed {len(processed_tweets)} tweets with {analysis_method}")
             
             # Step 3: Upload tweets to database
             logger.info("Uploading tweets to MongoDB...")
@@ -317,6 +438,7 @@ class TweetProcessor:
             logger.info(f"  - Negative: {sentiment_summary['negative_score']}")
             logger.info(f"  - Neutral: {sentiment_summary['neutral_score']}")
             logger.info(f"  - Overall Score: {sentiment_summary['ovr_score']}")
+            logger.info(f"  - Analysis Method: {sentiment_summary['analysis_method']}")
             
             # Step 5: Update sentiment database
             logger.info("Updating sentiment database...")
@@ -326,6 +448,18 @@ class TweetProcessor:
             logger.info("Updating user profile...")
             self.update_user_profile(len(processed_tweets))
             
+            # Step 7: Show emotion analysis summary if using Gemini
+            if self.gemini_available:
+                emotion_counts = Counter()
+                for tweet in processed_tweets:
+                    emotions = tweet.get('emotion', [])
+                    for emotion in emotions:
+                        emotion_counts[emotion] += 1
+                
+                logger.info("Emotion Analysis Summary:")
+                for emotion, count in emotion_counts.most_common(5):
+                    logger.info(f"  - {emotion.capitalize()}: {count}")
+            
             logger.info("=" * 50)
             logger.info("PROCESSING COMPLETED SUCCESSFULLY!")
             logger.info(f"✅ Database: {self.db_name}")
@@ -333,6 +467,7 @@ class TweetProcessor:
             logger.info(f"✅ Sentiments Collection: {self.sentiments_collection}")
             logger.info(f"✅ Total Tweets Processed: {len(processed_tweets)}")
             logger.info(f"✅ New Tweets Uploaded: {uploaded_count}")
+            logger.info(f"✅ Analysis Method: {analysis_method}")
             logger.info("=" * 50)
             
         except Exception as e:
