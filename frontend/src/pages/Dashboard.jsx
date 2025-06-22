@@ -1,5 +1,5 @@
 
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 // import PieChartdiv from "../components/dashboard/PieChartData"  
 import Header from "@/components/layout/Header"
 import Sidebar from "@/components/layout/Sidebar"
@@ -50,6 +50,31 @@ function Dashboard() {
     const [sidebarOpen, setSidebarOpen] = useState(true)
     const { darkMode } = useTheme()
 
+
+    useEffect(() => {
+        // Fetch recent tweets or any other data if needed
+        const brandName = localStorage.getItem("brand_name")
+        const fetchRecentTweets = async () => {
+            try {
+                const response = await fetch('http://localhost:5000/api/fetch_user_data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ brand_name: brandName }),
+                });
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                console.log('Recent Tweets:', data);
+            } catch (error) {
+                console.error('Error fetching recent tweets:', error);
+            }
+        };
+        fetchRecentTweets();
+    }, [])
+
     return (
         <div className={`flex h-full overflow-y-scroll w-full ${darkMode ? 'dark bg-slate-900' : ''}`}>
             <Sidebar isOpen={sidebarOpen} toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
@@ -65,11 +90,11 @@ function Dashboard() {
                         </div>
                     </div>
 
-                    <SentimentSummary />
+                    {/* <SentimentSummary />
                     <TrendingAnalysis />
                     <PlatformBreakdown />
-                    <NegativeSentimentAlerts />
-                    <EngagementMonitoring />
+                    <NegativeSentimentAlerts /> */}
+                    {/* <EngagementMonitoring /> */}
                 </div>
             </div>
         </div>

@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard"
 import SentimentTrends from "./pages/SentimentTrends"
 import LandingPage from "./pages/Home"
 import Alerts from "./pages/Alerts"
+import ConnectPage from "./pages/Connect"
 function App() {
 
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route index path="/" element={<LandingPage />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/connect" element={<ConnectPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/sentiment" element={<SentimentTrends />} />
         <Route path="/alerts" element={<Alerts />} />

@@ -1,22 +1,38 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Register() {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        brandname: "",
-        twitterHandle: "",
+        brand_name: "",
         email: "",
-        password: ""
+        password: "",
+        hashtags: []
     });
 
     const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.id]: e.target.value
-        });
+        const { id, value } = e.target;
+        if (id === "hashtags") {
+            // Split on whitespace, comma, or #
+            const hashtags = value
+                .split(/[\s,#]+/)
+                .filter(Boolean); // Remove empty strings
+            setFormData({
+                ...formData,
+                [id]: hashtags
+            });
+        } else {
+            setFormData({
+                ...formData,
+                [id]: value
+            });
+        }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        localStorage.setItem("brand_name", formData.brand_name);
 
         const response = await fetch("http://localhost:5000/api/register", {
             method: "POST",
@@ -27,6 +43,13 @@ function Register() {
         });
 
         const data = await response.json();
+
+        if (response.status == 200 || response.status == 201) {
+            navigate('/connect')
+        }
+        else {
+            alert(data.error || "An error occurred during registration");;
+        }
         console.log("Response:", data);
     };
 
@@ -47,24 +70,10 @@ function Register() {
                         </label>
                         <input
                             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            id="brandname"
+                            id="brand_name"
                             type="text"
                             placeholder="Enter your Brandname"
-                            value={formData.brandname}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
-                    <div className="mb-6">
-                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="twitterHandle">
-                            Twitter Handle
-                        </label>
-                        <input
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            id="twitterHandle"
-                            type="text"
-                            placeholder="Your twitter handle (without @)"
-                            value={formData.twitterHandle}
+                            value={formData.brand_name}
                             onChange={handleChange}
                             required
                         />
